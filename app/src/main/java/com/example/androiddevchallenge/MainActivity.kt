@@ -16,18 +16,31 @@
 package com.example.androiddevchallenge
 
 import android.os.Bundle
+import android.view.View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+import android.view.View.SYSTEM_UI_FLAG_LAYOUT_STABLE
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.animation.Crossfade
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.tooling.preview.Preview
+import com.example.androiddevchallenge.ui.HomeScreen
+import com.example.androiddevchallenge.ui.LoginScreen
+import com.example.androiddevchallenge.ui.WelcomeScreen
 import com.example.androiddevchallenge.ui.theme.MyTheme
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        window.decorView.systemUiVisibility =
+            SYSTEM_UI_FLAG_LAYOUT_STABLE or SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+
         setContent {
             MyTheme {
                 MyApp()
@@ -36,11 +49,25 @@ class MainActivity : AppCompatActivity() {
     }
 }
 
+sealed class Screens {
+    object Welcome : Screens()
+    object Login : Screens()
+    object Home : Screens()
+}
+
 // Start building your app here!
 @Composable
 fun MyApp() {
     Surface(color = MaterialTheme.colors.background) {
-        Text(text = "Ready... Set... GO!")
+        var currentScreen by remember { mutableStateOf<Screens>(Screens.Welcome) }
+
+        Crossfade(currentScreen) {
+            when (it) {
+                Screens.Home -> HomeScreen()
+                Screens.Login -> LoginScreen { currentScreen = Screens.Home }
+                Screens.Welcome -> WelcomeScreen { currentScreen = Screens.Login }
+            }
+        }
     }
 }
 
